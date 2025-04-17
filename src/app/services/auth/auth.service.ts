@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 interface AuthResponse {
   token: string;
@@ -17,7 +18,7 @@ interface AuthResponse {
   providedIn: 'root',
 })
 export class AuthService {
-  private apiUrl = 'https://mini-trello-be.onrender.com/api/auth';
+  private apiUrl = `${environment.apiUrl}/api/auth`;
   private loggedIn = new BehaviorSubject<boolean>(this.hasToken());
   private currentUser = new BehaviorSubject<any>(null);
 
@@ -77,7 +78,7 @@ export class AuthService {
   }
 
   loginWithGoogle(): void {
-    window.location.href = 'https://mini-trello-be.onrender.com/api/auth/google';
+    window.location.href = `${environment.apiUrl}/api/auth/google`;
   }
 
   handleGoogleCallback(token: string, userData: any): void {

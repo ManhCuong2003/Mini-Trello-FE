@@ -2,6 +2,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { AuthService } from '../auth/auth.service';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface Board {
   _id: string;
@@ -39,7 +40,7 @@ export interface BoardData {
   providedIn: 'root',
 })
 export class BoardService {
-  private apiUrl = 'https://mini-trello-be.onrender.com/api/boards';
+  private apiUrl = `${environment.apiUrl}/api/boards`;
   constructor(private http: HttpClient, private authService: AuthService) {}
 
   private getAuthHeaders(): HttpHeaders {

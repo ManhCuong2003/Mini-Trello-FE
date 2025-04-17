@@ -3,12 +3,13 @@ import { Injectable } from '@angular/core';
 import { AuthService } from '../auth/auth.service';
 import { Observable } from 'rxjs';
 import { Column } from '../board/board.service';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ColumnService {
-  private apiUrl = 'https://mini-trello-be.onrender.com/api/columns';
+  private apiUrl = `${environment.apiUrl}/api/columns`;
   constructor(private http: HttpClient, private authService: AuthService) {}
 
   private getAuthHeaders(): HttpHeaders {

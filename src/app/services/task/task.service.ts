@@ -3,6 +3,7 @@ import { Task } from '../board/board.service';
 import { Observable } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AuthService } from '../auth/auth.service';
+import { environment } from '../../../environments/environment';
 
 export interface MoveTaskPayload {
   sourceColumnId: string;
@@ -15,7 +16,7 @@ export interface MoveTaskPayload {
   providedIn: 'root',
 })
 export class TaskService {
-  private apiUrl = 'https://mini-trello-be.onrender.com/api/tasks';
+  private apiUrl = `${environment.apiUrl}/api/tasks`;
   constructor(private http: HttpClient, private authService: AuthService) {}
 
   private getAuthHeaders(): HttpHeaders {
