@@ -17,7 +17,7 @@ interface AuthResponse {
   providedIn: 'root',
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:5000/api/auth';
+  private apiUrl = 'https://mini-trello-be.onrender.com/api/auth';
   private loggedIn = new BehaviorSubject<boolean>(this.hasToken());
   private currentUser = new BehaviorSubject<any>(null);
 
@@ -77,7 +77,7 @@ export class AuthService {
   }
 
   loginWithGoogle(): void {
-    window.location.href = 'http://localhost:5000/api/auth/google';
+    window.location.href = 'https://mini-trello-be.onrender.com/api/auth/google';
   }
 
   handleGoogleCallback(token: string, userData: any): void {

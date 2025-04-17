@@ -39,7 +39,7 @@ export interface BoardData {
   providedIn: 'root',
 })
 export class BoardService {
-  private apiUrl = 'http://localhost:5000/api/boards';
+  private apiUrl = 'https://mini-trello-be.onrender.com/api/boards';
   constructor(private http: HttpClient, private authService: AuthService) {}
 
   private getAuthHeaders(): HttpHeaders {

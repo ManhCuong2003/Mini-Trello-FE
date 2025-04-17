@@ -8,7 +8,7 @@ import { Column } from '../board/board.service';
   providedIn: 'root',
 })
 export class ColumnService {
-  private apiUrl = 'http://localhost:5000/api/columns';
+  private apiUrl = 'https://mini-trello-be.onrender.com/api/columns';
   constructor(private http: HttpClient, private authService: AuthService) {}
 
   private getAuthHeaders(): HttpHeaders {
@@ -21,7 +21,6 @@ export class ColumnService {
 
   // Tạo column mới cho một board
   createColumn(boardId: string, name: string): Observable<Column> {
-    // URL đặc biệt để tạo column cho board cụ thể
     const url = `${this.apiUrl}/boards/${boardId}/columns`;
     return this.http.post<Column>(
       url,

@@ -15,7 +15,7 @@ export interface MoveTaskPayload {
   providedIn: 'root',
 })
 export class TaskService {
-  private apiUrl = 'http://localhost:5000/api/tasks';
+  private apiUrl = 'https://mini-trello-be.onrender.com/api/tasks';
   constructor(private http: HttpClient, private authService: AuthService) {}
 
   private getAuthHeaders(): HttpHeaders {
