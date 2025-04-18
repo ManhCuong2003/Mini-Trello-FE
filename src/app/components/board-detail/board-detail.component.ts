@@ -1,28 +1,27 @@
-import { Component, computed, OnInit, signal } from '@angular/core';
 import {
-  BoardData,
-  BoardService,
-  Task,
-} from '../../services/board/board.service';
-import { HeaderComponent } from '../header/header.component';
-import { ActivatedRoute, Router } from '@angular/router';
-import { ColumnService } from '../../services/column/column.service';
-import { MoveTaskPayload, TaskService } from '../../services/task/task.service';
+  CdkDragDrop,
+  DragDropModule,
+  moveItemInArray,
+  transferArrayItem,
+} from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
+import { Component, computed, OnInit, signal } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { ColumnComponent } from '../column/column.component';
+import { ActivatedRoute, Router } from '@angular/router';
 import {
-  CdkDragDrop,
-  CdkDropListGroup,
-  DragDropModule,
-  moveItemInArray,
-  transferArrayItem,
-} from '@angular/cdk/drag-drop';
+  BoardData,
+  BoardService,
+  Task,
+} from '../../services/board/board.service';
+import { ColumnService } from '../../services/column/column.service';
+import { MoveTaskPayload, TaskService } from '../../services/task/task.service';
+import { ColumnComponent } from '../column/column.component';
+import { HeaderComponent } from '../header/header.component';
 
 @Component({
   selector: 'app-board-detail',
@@ -102,7 +101,7 @@ import {
         </div>
         <div
           *ngIf="boardData()?.columns?.length! > 0 && isLoading() === false"
-          class="flex-1 flex gap-6 px-6 overflow-x-auto"
+          class="flex-1 flex gap-6 px-6 overflow-x-auto min-h-0"
           cdkDropListGroup
         >
           <div *ngFor="let column of boardData()?.columns">
@@ -308,115 +307,108 @@ export class BoardDetailComponent implements OnInit {
     const columnName = this.boardData()?.columns.find(
       (col) => col._id === columnId
     )?.name;
-    if (
-      confirm(
-        `Bạn có chắc muốn xóa "${columnName}" và tất cả các task bên trong nó?`
-      )
-    ) {
-      this.errorMessage.set('');
-      this.columnService.deleteColumn(columnId).subscribe({
-        next: () => {
-          this.boardData.update((currentData) => {
-            if (!currentData) {
-              return null;
-            }
-            return {
-              ...currentData,
-              columns: currentData.columns.filter(
-                (col) => col._id !== columnId
-              ),
-              tasks: currentData.tasks.filter(
-                (task) => task.column !== columnId
-              ),
-              board: {
-                ...currentData.board,
-                columnOrder: currentData.board.columnOrder.filter(
-                  (colId) => colId !== columnId
-                ),
-              },
-            };
-          });
-        },
-        error: (err) => {
-          console.error('Error deleting column:', err);
-          this.errorMessage.set(err.error?.message || 'Fail to delete column.');
-        },
-      });
-    }
-  }
-
-  createTask(event: { columnId: string; title: string, description: string }) {
     this.errorMessage.set('');
-    this.taskService.createTask(event.columnId, event.title, event.description).subscribe({
-      next: (newTask) => {
+    this.columnService.deleteColumn(columnId).subscribe({
+      next: () => {
         this.boardData.update((currentData) => {
           if (!currentData) {
             return null;
           }
-          const updatedTasks = [...currentData.tasks, newTask];
-          const updatedColumns = currentData.columns.map((col) => {
-            if (col._id === event.columnId) {
-              return { ...col, taskOrder: [...col.taskOrder, newTask._id] };
-            }
-            return col;
-          });
           return {
             ...currentData,
-            columns: updatedColumns,
-            tasks: updatedTasks,
+            columns: currentData.columns.filter((col) => col._id !== columnId),
+            tasks: currentData.tasks.filter((task) => task.column !== columnId),
+            board: {
+              ...currentData.board,
+              columnOrder: currentData.board.columnOrder.filter(
+                (colId) => colId !== columnId
+              ),
+            },
           };
         });
       },
       error: (err) => {
-        console.error('Error creating task:', err);
-        this.errorMessage.set(err.error?.message || 'Fail to create new task.');
+        console.error('Error deleting column:', err);
+        this.errorMessage.set(err.error?.message || 'Fail to delete column.');
       },
     });
+  }
+
+  createTask(event: { columnId: string; title: string; description: string }) {
+    this.errorMessage.set('');
+    this.taskService
+      .createTask(event.columnId, event.title, event.description)
+      .subscribe({
+        next: (newTask) => {
+          this.boardData.update((currentData) => {
+            if (!currentData) {
+              return null;
+            }
+            const updatedTasks = [...currentData.tasks, newTask];
+            const updatedColumns = currentData.columns.map((col) => {
+              if (col._id === event.columnId) {
+                return { ...col, taskOrder: [...col.taskOrder, newTask._id] };
+              }
+              return col;
+            });
+            return {
+              ...currentData,
+              columns: updatedColumns,
+              tasks: updatedTasks,
+            };
+          });
+        },
+        error: (err) => {
+          console.error('Error creating task:', err);
+          this.errorMessage.set(
+            err.error?.message || 'Fail to create new task.'
+          );
+        },
+      });
   }
 
   deleteTask(taskId: string): void {
     if (!this.boardData()) {
       return;
     }
-    if (confirm('Are you sure to delete this task?')) {
-      this.errorMessage.set('');
-      this.taskService.deleteTask(taskId).subscribe({
-        next: () => {
-          this.boardData.update((currentData) => {
-            if (!currentData) {
-              return null;
+
+    this.errorMessage.set('');
+    this.taskService.deleteTask(taskId).subscribe({
+      next: () => {
+        this.boardData.update((currentData) => {
+          if (!currentData) {
+            return null;
+          }
+          const taskToDelete = currentData.tasks.find(
+            (task) => task._id === taskId
+          );
+          if (!taskToDelete) {
+            return currentData;
+          }
+          const updatedTasks = currentData.tasks.filter(
+            (task) => task._id !== taskId
+          );
+          const updatedColumns = currentData.columns.map((col) => {
+            if (col._id === taskToDelete.column) {
+              return {
+                ...col,
+                taskOrder: col.taskOrder.filter((id) => id !== taskId),
+              };
             }
-            const taskToDelete = currentData.tasks.find(
-              (task) => task._id === taskId
-            );
-            if (!taskToDelete) {
-              return currentData;
-            }
-            const updatedTasks = currentData.tasks.filter(
-              (task) => task._id !== taskId
-            );
-            const updatedColumns = currentData.columns.map((col) => {
-              if (col._id === taskToDelete.column) {
-                return {
-                  ...col,
-                  taskOrder: col.taskOrder.filter((id) => id !== taskId),
-                };
-              }
-              return col;
-            });
-            return {
-              ...currentData,
-              tasks: updatedTasks,
-              columns: updatedColumns,
-            };
+            return col;
           });
-        },
-        error: (err) => {
-          console.error('Error deleting task:', err);
-          this.errorMessage.set(err.error?.message || 'Fail to delete task.');
-        },
-      });
-    }
+          return {
+            ...currentData,
+            tasks: updatedTasks,
+            columns: updatedColumns,
+          };
+        });
+      },
+      error: (err) => {
+        console.error('Error deleting task:', err);
+        this.errorMessage.set(err.error?.message || 'Fail to delete task.');
+      },
+    });
   }
 
   // drag & drop
@@ -432,14 +424,6 @@ export class BoardDetailComponent implements OnInit {
     const taskToMove = event.item.data as Task;
     const previousIndex = event.previousIndex;
     const currentIndex = event.currentIndex;
-
-    // console.log('Drop Event:', {
-    //     taskToMove: taskToMove.title,
-    //     previousColumnId,
-    //     destColumnId,
-    //     previousIndex,
-    //     currentIndex
-    // });
 
     if (event.previousContainer === event.container) {
       moveItemInArray(containerData, previousIndex, currentIndex);
@@ -473,9 +457,7 @@ export class BoardDetailComponent implements OnInit {
     };
 
     this.taskService.moveTask(taskToMove._id, payload).subscribe({
-      next: (res) => {
-        console.log('Task move successful on backend:', res.message);
-      },
+      next: () => {},
       error: (err) => {
         console.error('Error moving task on backend:', err);
         this.errorMessage.set('Move task error. Load data again...');

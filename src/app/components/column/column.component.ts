@@ -1,17 +1,16 @@
-import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
-import { Column, Task } from '../../services/board/board.service';
-import { CommonModule } from '@angular/common';
 import {
   CdkDragDrop,
-  CdkDropList,
-  DragDropModule,
+  DragDropModule
 } from '@angular/cdk/drag-drop';
+import { CommonModule } from '@angular/common';
+import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { Column, Task } from '../../services/board/board.service';
 import { TaskComponent } from '../task/task.component';
 
 @Component({
@@ -22,7 +21,7 @@ import { TaskComponent } from '../task/task.component';
       <div class="p-4 flex justify-between font-bold">
         <h3 class="text-gray-700">{{ column.name }}</h3>
         <button
-          (click)="onDeleteColumn()"
+          (click)="openDeleteColumnModal()"
           class="text-gray-700: hover:text-red-500 transition-colors duration-300 cursor-pointer"
         >
           <svg
@@ -46,7 +45,7 @@ import { TaskComponent } from '../task/task.component';
         [id]="column._id"
         [cdkDropListData]="tasks"
         (cdkDropListDropped)="drop($event)"
-        class="p-2"
+        class="p-2 max-h-[60vh] overflow-y-auto"
       >
         <app-task
           *ngFor="let task of tasks"
@@ -147,6 +146,34 @@ import { TaskComponent } from '../task/task.component';
           </form>
         </div>
       </div>
+      <div
+        *ngIf="isDeleteModalOpen()"
+        class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+      >
+        <!-- Modal content -->
+        <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
+          <h2 class="text-lg font-semibold mb-4">Comfirm to delete column</h2>
+          <p class="text-gray-600 mb-6">
+            Are you sure to delete "<strong>{{ column.name }}</strong
+            >" column?
+          </p>
+
+          <div class="flex justify-end gap-3">
+            <button
+              class="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100"
+              (click)="closeDeleteModal()"
+            >
+              Cancel
+            </button>
+            <button
+              class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700"
+              (click)="onDeleteColumn()"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   `,
   styles: ``,
@@ -167,12 +194,21 @@ export class ColumnComponent {
   isAddTaskModalOpen = signal<boolean>(false);
   errorMessage = signal<string>('');
   taskForm: FormGroup;
+  isDeleteModalOpen = signal<boolean>(false);
 
   constructor(private fb: FormBuilder) {
     this.taskForm = this.fb.group({
       taskTitle: ['', [Validators.required]],
       description: [''],
     });
+  }
+
+  openDeleteColumnModal() {
+    this.isDeleteModalOpen.update((prev) => !prev);
+  }
+
+  closeDeleteModal(): void {
+    this.isDeleteModalOpen.update((prev) => !prev);
   }
 
   openAddTaskModal(): void {

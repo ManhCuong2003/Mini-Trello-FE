@@ -333,8 +333,7 @@ export class BoardListComponent implements OnInit {
     this.boardService
       .createBoard(this.boardForm.get('boardName')?.value)
       .subscribe({
-        next: (newBoard) => {
-          console.log(newBoard);
+        next: () => {
           this.loadBoards();
           this.closeCreateBoardModal();
           this.boardForm.reset();
